@@ -1,0 +1,51 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment directories
+env/
+venv/
+.venv/
+
+# Distribution/Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE configurations
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Test cache
+.tox/
+.pytest_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+*.pem
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Output files (optional, if you don't want to track cell output)
+*.nbconvert.ipynb
+
+# PyInstaller build files
+build/
+dist/
+*.spec
+
+

@@ -1,0 +1,26 @@
+initial_state: main_menu
+
+transitions:
+  - current_state: main_menu
+    next_state: load_level
+    trigger: P
+
+  - current_state: play_level
+    next_state: quit_level
+    trigger: Q
+
+  - current_state: play_level
+    next_state: won_level
+    trigger: win=True
+
+  - current_state: play_level
+    next_state: lost_level
+    trigger: loss=True
+
+  - current_state: won_level
+    next_state: main_menu
+    trigger: auto
+
+  - current_state: lost_level
+    next_state: main_menu
+    trigger: auto

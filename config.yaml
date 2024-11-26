@@ -4,3 +4,10 @@ game_dev_date: Nov 24, 2024
 screen_width: 800
 screen_height: 600
 fps: 60
+
+keys:
+  key_play: 'p'
+  key_pause: 'space'
+  key_exit: 'q'
+  
+  

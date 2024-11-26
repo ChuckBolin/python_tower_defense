@@ -1,0 +1,96 @@
+Modifier Keys:
+
+    K_LSHIFT (Left Shift)
+    K_RSHIFT (Right Shift)
+    K_LCTRL (Left Control)
+    K_RCTRL (Right Control)
+    K_LALT (Left Alt)
+    K_RALT (Right Alt)
+    K_LMETA (Left Meta/Windows key)
+    K_RMETA (Right Meta/Windows key)
+    K_CAPSLOCK (Caps Lock)
+    K_MODE (Mode key)
+    K_NUMLOCK (Num Lock)
+
+Navigation Keys:
+
+    K_TAB (Tab)
+    K_BACKSPACE (Backspace)
+    K_RETURN (Enter/Return)
+    K_SPACE (Spacebar)
+    K_ESCAPE (Escape key)
+
+Arrow Keys:
+
+    K_UP (Up Arrow)
+    K_DOWN (Down Arrow)
+    K_LEFT (Left Arrow)
+    K_RIGHT (Right Arrow)
+
+Function Keys:
+
+    K_F1 through K_F15 (Function keys)
+
+Keypad (Numpad) Keys:
+
+    K_KP0 through K_KP9 (Numeric keypad numbers)
+    K_KP_PERIOD (Keypad Period/Decimal)
+    K_KP_DIVIDE (Keypad Divide /)
+    K_KP_MULTIPLY (Keypad Multiply *)
+    K_KP_MINUS (Keypad Minus -)
+    K_KP_PLUS (Keypad Plus +)
+    K_KP_ENTER (Keypad Enter)
+    K_KP_EQUALS (Keypad Equals =)
+
+Punctuation and Symbols:
+
+    K_EXCLAIM (!)
+    K_QUOTEDBL (")
+    K_HASH (#)
+    K_DOLLAR ($)
+    K_PERCENT (%)
+    K_AMPERSAND (&)
+    K_QUOTE (')
+    K_LEFTPAREN (()
+    K_RIGHTPAREN ())
+    K_ASTERISK (*)
+    K_PLUS (+)
+    K_COMMA (,)
+    K_MINUS (-)
+    K_PERIOD (.)
+    K_SLASH (/)
+    K_COLON (:)
+    K_SEMICOLON (;)
+    K_LESS (<)
+    K_EQUALS (=)
+    K_GREATER (>)
+    K_QUESTION (?)
+    K_AT (@)
+    K_LEFTBRACKET ([)
+    K_BACKSLASH (\)
+    K_RIGHTBRACKET (])
+    K_CARET (^)
+    K_UNDERSCORE (_)
+    K_BACKQUOTE (`)
+
+Miscellaneous:
+
+    K_PRINT (Print Screen)
+    K_SYSREQ (System Request)
+    K_SCROLLLOCK (Scroll Lock)
+    K_PAUSE (Pause/Break)
+    K_INSERT (Insert)
+    K_DELETE (Delete)
+    K_HOME (Home)
+    K_END (End)
+    K_PAGEUP (Page Up)
+    K_PAGEDOWN (Page Down)
+
+Meta Keys:
+
+    K_MENU (Menu/Application key)
+
+Game Controller Keys (for completeness):
+
+    K_BREAK (Break key)
+    K_HELP (Help key)
