@@ -1,13 +1,41 @@
-game_title: "Tower Defense Game"
-game_version: 0.1
-game_dev_date: Nov 24, 2024
-screen_width: 800
-screen_height: 600
-fps: 60
+game_info:
+  game_title: "Tower Defense Game"
+  game_version: 0.1
+  game_dev_date: Nov 24, 2024
+  screen_width: 800
+  screen_height: 600
+  fps: 60
 
 keys:
   key_play: 'p'
   key_pause: 'space'
-  key_exit: 'q'
-  
-  
+  key_exit: 'x'
+  key_quit: 'q'
+  key_escape: 'escape'
+
+regions:
+  play: [100, 200, 300, 400]   
+  setup: [400, 500, 300, 400] 
+  options: [400, 500, 300, 400]    
+  restore: [600, 700, 300, 400]      
+  exit: [600, 700, 300, 400]      
+  main_menu: [0, 100, 0, 50] 
+  pause: [0, 100, 0, 50] 
+  quit: [0, 100, 0, 50]   
+
+state_transitions:
+  - [initial, main_menu, "auto"]
+  - [main_menu, play, "key_play | region play"]
+  - [main_menu, options, "region options"]
+  - [options, main_menu, "key_escape"]
+  - [main_menu, setup, "region setup"]
+  - [main_menu, restore, "region restore"]
+  - [main_menu, exit_game, "key_exit | region exit"]
+  - [play, pause, "key_pause"]
+  - [pause, play, "key_play"]
+  - [play, win_game, "cond win_game"]
+  - [play, win_level, "cond win_level"]
+  - [play, lose_level, "cond lose_level"]
+  - [play, power_up, "cond power_up"]
+  - [play, quit_level, "key_quit"]
+  - [quit_level, main_menu, "auto"]
