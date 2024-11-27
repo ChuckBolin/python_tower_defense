@@ -14,11 +14,10 @@ keys:
   key_escape: 'escape'
 
 regions:
-  play: [100, 200, 300, 400]   
-  setup: [400, 500, 300, 400] 
-  options: [400, 500, 300, 400]    
-  restore: [600, 700, 300, 400]      
-  exit: [600, 700, 300, 400]      
+  play: [350, 150, 450, 200]       # Horizontally centered, top margin
+  setup: [350, 210, 450, 260]      # 10px margin between play and setup
+  restore: [350, 270, 450, 320]    # 10px margin between setup and restore
+  exit: [350, 330, 450, 380]       # 10px margin between restore and exit    
   main_menu: [0, 100, 0, 50] 
   pause: [0, 100, 0, 50] 
   quit: [0, 100, 0, 50]   
@@ -26,16 +25,19 @@ regions:
 state_transitions:
   - [initial, main_menu, "auto"]
   - [main_menu, play, "key_play | region play"]
-  - [main_menu, options, "region options"]
-  - [options, main_menu, "key_escape"]
   - [main_menu, setup, "region setup"]
   - [main_menu, restore, "region restore"]
-  - [main_menu, exit_game, "key_exit | region exit"]
+  - [main_menu, exit, "key_exit | region exit"]
+  - [setup, main_menu, "key_escape"]
+  - [restore, main_menu, "key_escape"]  
   - [play, pause, "key_pause"]
   - [pause, play, "key_play"]
   - [play, win_game, "cond win_game"]
   - [play, win_level, "cond win_level"]
   - [play, lose_level, "cond lose_level"]
   - [play, power_up, "cond power_up"]
-  - [play, quit_level, "key_quit"]
-  - [quit_level, main_menu, "auto"]
+  - [play, quit, "key_quit"]
+  - [quit, main_menu, "auto"]
+
+
+  
