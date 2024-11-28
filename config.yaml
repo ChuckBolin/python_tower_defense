@@ -27,7 +27,7 @@ state_transitions:
   - [main_menu, play, "key_play | region play"]
   - [main_menu, setup, "region setup"]
   - [main_menu, restore, "region restore"]
-  - [main_menu, exit, "key_exit | region exit"]
+  - [main_menu, exit_game, "key_exit | region exit"]
   - [setup, main_menu, "key_escape"]
   - [restore, main_menu, "key_escape"]  
   - [play, pause, "key_pause"]
