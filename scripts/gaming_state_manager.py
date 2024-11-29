@@ -64,7 +64,7 @@ class GamingStateManager:
                     self.current_state = "exit_game"
                     self.exit_game()
 
-        print(f"Game state: {self.current_state}")
+        # print(f"Game state: {self.current_state}")
 
     def is_in_region(self, region_name, x, y):
         """Check if a point is within a defined region."""
