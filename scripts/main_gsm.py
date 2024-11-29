@@ -1,131 +1,100 @@
+"""
+    Program: Battlefront Blitz
+    Date: November 2024
+    Purpose: 2D Dropdown Tower Defense Game
+"""
+
+## Include libraries
 import pygame
 import sys
 import numpy as np
+import random
 from gaming_state_manager import GamingStateManager
+from sprites import SpriteSheet, Sprite, SpriteManager
 
+import yaml
+import os
 
-class SpriteSheet:
-    def __init__(self, image_path):
-        """Initialize with the path to the sprite sheet image."""
-        self.sprite_sheet = pygame.image.load(image_path).convert_alpha()
+class Config:
+    def __init__(self, config_file="config.yaml"):
+        """
+        Initialize the Config class and load the configuration file.
+        If the file is missing or incomplete, default values are used.
+        """
+        self.default_values = {
+            "game_info": {
+                "game_title": "Tower Defense Game",
+                "game_version": 0.1,
+                "game_dev_date": "Nov 24, 2024",
+                "screen_width": 800,
+                "screen_height": 600,
+                "fps": 60,
+            }
+        }
+        self.config = self.load_config(config_file)
+        self.initialize_class_variables()
 
-    def get_sprite(self, x, y, width, height, scale=1.0):
-        """Extract a sprite at (x, y) with given dimensions, optionally scaled."""
-        sprite = self.sprite_sheet.subsurface((x, y, width, height))
-        if scale != 1.0:
-            scaled_width = int(width * scale)
-            scaled_height = int(height * scale)
-            sprite = pygame.transform.scale(sprite, (scaled_width, scaled_height))
-        return sprite
+    def load_config(self, config_file):
+        """
+        Load the configuration file. If it's missing or incomplete,
+        merge with default values.
+        """
+        if not os.path.exists(config_file):
+            print(f"Config file '{config_file}' not found. Using default values.")
+            return self.default_values
 
-    def get_animation_frames(self, x, y, width, height, sprites_per_row, rows, scale=1.0):
-        """Extract a series of frames for an animation."""
-        frames = []
-        for row in range(rows):
-            for col in range(sprites_per_row):
-                frame_x = x + col * width
-                frame_y = y + row * height
-                frame = self.get_sprite(frame_x, frame_y, width, height, scale)
-                frames.append(frame)
-        return frames
+        try:
+            with open(config_file, "r") as file:
+                config_data = yaml.safe_load(file)
+                return self.merge_defaults(config_data)
+        except (yaml.YAMLError, IOError) as e:
+            print(f"Error reading config file: {e}. Using default values.")
+            return self.default_values
 
+    def merge_defaults(self, config_data):
+        """
+        Merge loaded config data with default values, ensuring missing keys
+        are filled in.
+        """
+        merged_config = self.default_values.copy()
+        for key, value in config_data.items():
+            if key in merged_config and isinstance(value, dict):
+                # Merge sub-dictionaries
+                merged_config[key].update(value)
+            else:
+                merged_config[key] = value
+        return merged_config
 
-class Sprite:
-    def __init__(self, sprite_id, sprite_sheet, x1, y1, width, height, scale=1.0, 
-                 animated=False, sprites_per_row=1, rows=1, frame_time=None):
-        """Initialize a Sprite with its properties."""
-        self.id = sprite_id
-        self.sprite_sheet = sprite_sheet
-        self.x1, self.y1 = x1, y1
-        self.width, self.height = width, height
-        self.animated = animated
-        self.sprites_per_row = sprites_per_row
-        self.rows = rows
-        self.frame_time = frame_time
+    def initialize_class_variables(self):
+        """
+        Initialize class variables from the loaded configuration.
+        """
+        game_info = self.config.get("game_info", {})
+        self.game_title = game_info.get("game_title", self.default_values["game_info"]["game_title"])
+        self.game_version = game_info.get("game_version", self.default_values["game_info"]["game_version"])
+        self.game_dev_date = game_info.get("game_dev_date", self.default_values["game_info"]["game_dev_date"])
+        self.screen_width = game_info.get("screen_width", self.default_values["game_info"]["screen_width"])
+        self.screen_height = game_info.get("screen_height", self.default_values["game_info"]["screen_height"])
+        self.fps = game_info.get("fps", self.default_values["game_info"]["fps"])
 
-        # Scale the dimensions
-        self.scaled_width = int(width * scale)
-        self.scaled_height = int(height * scale)
-
-        # Extract the image or animation frames
-        if not animated:
-            self.image = sprite_sheet.subsurface((x1, y1, width, height))
-            if scale != 1.0:
-                self.image = pygame.transform.scale(self.image, (self.scaled_width, self.scaled_height))
-        else:
-            self.frames = []
-            for row in range(rows):
-                for col in range(sprites_per_row):
-                    frame_x = x1 + col * width
-                    frame_y = y1 + row * height
-                    frame_image = sprite_sheet.subsurface((frame_x, frame_y, width, height))
-                    if scale != 1.0:
-                        frame_image = pygame.transform.scale(frame_image, (self.scaled_width, self.scaled_height))
-                    self.frames.append(frame_image)
-
-    def get_image(self, frame_index=0, angle=0):
-        """Return a specific frame of the sprite, optionally rotated."""
-        if self.animated:
-            frame = self.frames[frame_index % len(self.frames)]
-            if angle != 0:
-                return pygame.transform.rotate(frame, angle)
-            return frame
-        else:
-            if angle != 0:
-                return pygame.transform.rotate(self.image, angle)
-            return self.image
-
-
-class SpriteManager:
-    def __init__(self):
-        self.sprites = {}  # Dictionary to store sprites by their unique ID
-
-    def add_sprite(self, sprite_id, sprite_sheet, x1, y1, width, height, scale=1.0):
-        """Add a static sprite to the manager."""
-        if sprite_id in self.sprites:
-            raise ValueError(f"Sprite ID '{sprite_id}' already exists.")
-        
-        sprite = Sprite(
-            sprite_id=sprite_id,
-            sprite_sheet=sprite_sheet,
-            x1=x1,
-            y1=y1,
-            width=width,
-            height=height,
-            scale=scale,
+    def __repr__(self):
+        """
+        String representation for debugging purposes.
+        """
+        return (
+            f"Config("
+            f"game_title='{self.game_title}', "
+            f"game_version={self.game_version}, "
+            f"game_dev_date='{self.game_dev_date}', "
+            f"screen_width={self.screen_width}, "
+            f"screen_height={self.screen_height}, "
+            f"fps={self.fps}"
+            f")"
         )
-        self.sprites[sprite_id] = sprite
-
-    def add_animation(self, sprite_id, sprite_sheet, x1, y1, width, height, scale=1.0, 
-                      sprites_per_row=1, rows=1, frame_time=0.1):
-        """Add an animated sprite to the manager."""
-        if sprite_id in self.sprites:
-            raise ValueError(f"Sprite ID '{sprite_id}' already exists.")
-        
-        animated_sprite = Sprite(
-            sprite_id=sprite_id,
-            sprite_sheet=sprite_sheet,
-            x1=x1,
-            y1=y1,
-            width=width,
-            height=height,
-            scale=scale,
-            animated=True,
-            sprites_per_row=sprites_per_row,
-            rows=rows,
-            frame_time=frame_time,
-        )
-        self.sprites[sprite_id] = animated_sprite
-
-    def get_sprite(self, sprite_id):
-        """Retrieve a sprite by its ID."""
-        if sprite_id not in self.sprites:
-            raise ValueError(f"Sprite ID '{sprite_id}' not found.")
-        return self.sprites[sprite_id]
 
 
 
-
+## Class "world"
 class World:
     def __init__(self, width_in_tiles, height_in_tiles, tile_size):
         """Initialize the world dimensions and tiles."""
@@ -144,9 +113,70 @@ class World:
         self.viewport_width = 800  # Hardcoded screen width
         self.viewport_height = 600  # Hardcoded screen height
 
+    def fill(self, tile_id):
+        """
+        Fill the entire world with a single tile.
+        :param tile_id: The ID of the tile to fill the world with.
+        """
+        self.tiles.fill(tile_id)
+
+    def place_rectangle(self, tile_id, top_left, bottom_right):
+        """
+        Place a rectangular area of tiles.
+        :param tile_id: The ID of the tile to place.
+        :param top_left: (row, col) tuple for the top-left corner of the rectangle.
+        :param bottom_right: (row, col) tuple for the bottom-right corner of the rectangle.
+        """
+        row1, col1 = top_left
+        row2, col2 = bottom_right
+        self.tiles[row1:row2+1, col1:col2+1] = tile_id
+
+    def place_lake(self, top_left, bottom_right, tile_ids):
+        """
+        Place a rectangular lake with different tiles for banks and center.
+        :param top_left: (row, col) tuple for the top-left corner of the lake.
+        :param bottom_right: (row, col) tuple for the bottom-right corner of the lake.
+        :param tile_ids: A dictionary of tile IDs for different parts of the lake:
+                         {
+                             "lt": tile_id,  # Left-top corner
+                             "rt": tile_id,  # Right-top corner
+                             "lb": tile_id,  # Left-bottom corner
+                             "rb": tile_id,  # Right-bottom corner
+                             "mt": tile_id,  # Middle-top (horizontal edge)
+                             "mb": tile_id,  # Middle-bottom (horizontal edge)
+                             "lm": tile_id,  # Left-middle (vertical edge)
+                             "rm": tile_id,  # Right-middle (vertical edge)
+                             "mm": tile_id,  # Middle-middle (center)
+                         }
+        """
+        row1, col1 = top_left
+        row2, col2 = bottom_right
+
+        # Place corners
+        self.tiles[row1, col1] = tile_ids["lt"]  # Left-top
+        self.tiles[row1, col2] = tile_ids["rt"]  # Right-top
+        self.tiles[row2, col1] = tile_ids["lb"]  # Left-bottom
+        self.tiles[row2, col2] = tile_ids["rb"]  # Right-bottom
+
+        # Place horizontal edges
+        if col2 > col1 + 1:  # Ensure there's a space for horizontal edges
+            self.tiles[row1, col1+1:col2] = tile_ids["mt"]  # Top edge
+            self.tiles[row2, col1+1:col2] = tile_ids["mb"]  # Bottom edge
+
+        # Place vertical edges
+        if row2 > row1 + 1:  # Ensure there's a space for vertical edges
+            self.tiles[row1+1:row2, col1] = tile_ids["lm"]  # Left edge
+            self.tiles[row1+1:row2, col2] = tile_ids["rm"]  # Right edge
+
+        # Fill the center
+        if row2 > row1 + 1 and col2 > col1 + 1:
+            self.tiles[row1+1:row2, col1+1:col2] = tile_ids["mm"]  # Center
+        
+        
+
     def populate(self, tile_mapping):
         """
-        Populate the world with tiles.
+        Populate the world with tiles using probabilities.
         :param tile_mapping: A dictionary mapping tile IDs to probabilities.
                              Example: {1: 0.5, 2: 0.5} for ground and water.
         """
@@ -194,10 +224,6 @@ class World:
                                     (x_offset + (col - start_col) * self.tile_size,
                                      y_offset + (row - start_row) * self.tile_size))
 
-
-
-
-
     def move_view(self, dx, dy):
         """
         Move the viewport by a given amount, clamping to the world bounds.
@@ -207,10 +233,7 @@ class World:
         self.set_view(self.world_x + dx, self.world_y + dy)
 
 
-
-
-
-    
+## Functions    
 def draw_play(screen, sprite_manager):
     """Render the play state and explosions."""
     font = pygame.font.Font(None, 36)
@@ -246,54 +269,133 @@ def draw_menu(screen, regions):
         text_surface = font.render(name, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=((x1 + x2) // 2, (y1 + y2) // 2))
         screen.blit(text_surface, text_rect)
-        
+
+## Main function for game loop        
 def main():
+    config = Config()
+
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
-    pygame.display.set_caption("Simplified State Manager")
+    # caption = config.game_title + "  v" + str(config.game_version) 
+    # pygame.display.set_caption(caption)
     clock = pygame.time.Clock()
 
     # Initialize the state manager
     state_manager = GamingStateManager()
     
-    # Load sprites
+    # Load sprites ans sprite_manager
     sprite_sheet1 = SpriteSheet("assets/sprites/water-tiles.png")
     sprite_manager = SpriteManager()
     sprite_manager.add_sprite("ground1", sprite_sheet1.sprite_sheet, 0, 0, 32, 32)
-    sprite_manager.add_sprite("water1", sprite_sheet1.sprite_sheet, 256, 320, 32, 32)
-    
-
-
+    # sprite_manager.add_sprite("water1", sprite_sheet1.sprite_sheet, 256, 320, 32, 32)
+    sprite_manager.add_sprite("water_lt", sprite_sheet1.sprite_sheet, 256, 32, 32, 32)
+    sprite_manager.add_sprite("water_lm", sprite_sheet1.sprite_sheet, 224, 320, 32, 32)
+    sprite_manager.add_sprite("water_lb", sprite_sheet1.sprite_sheet, 224, 96, 32, 32)
+    sprite_manager.add_sprite("water_mt", sprite_sheet1.sprite_sheet, 288, 32, 32, 32)
+    sprite_manager.add_sprite("water_mm", sprite_sheet1.sprite_sheet, 288, 64, 32, 32)
+    sprite_manager.add_sprite("water_mb", sprite_sheet1.sprite_sheet, 256, 416, 32, 32)
+    sprite_manager.add_sprite("water_rt", sprite_sheet1.sprite_sheet, 320, 32, 32, 32)
+    sprite_manager.add_sprite("water_rm", sprite_sheet1.sprite_sheet, 544, 378, 32, 32)
+    sprite_manager.add_sprite("water_rb", sprite_sheet1.sprite_sheet, 352, 96, 32, 32)
+    sprite_manager.add_sprite("water_v", sprite_sheet1.sprite_sheet, 480, 160, 32, 32)
+    sprite_manager.add_sprite("water_h", sprite_sheet1.sprite_sheet, 512, 224, 32, 32)
 
     # World setup
     world = World(width_in_tiles=128, height_in_tiles=128, tile_size=32)
-    # Tile-to-sprite mapping
     tile_to_sprite = {
         1: "ground1",
-        2: "water1",
+        200: "water_lt",
+        201: "water_lm",
+        202: "water_lb",
+        203: "water_mt",
+        204: "water_mm",
+        205: "water_mb",
+        206: "water_rt",
+        207: "water_rm",
+        208: "water_rb",
+        11: "water_v",
+        12: "water_h"        
     }    
-    world.populate({1: 0.5, 2: 0.5})  # Randomized population
+    
+    # Define tile IDs for the lake
+    lake_tile_ids = {
+        "lt": 200,  # Left-top corner
+        "rt": 206,  # Right-top corner
+        "lb": 202,  # Left-bottom corner
+        "rb": 208,  # Right-bottom corner
+        "mt": 203,  # Middle-top (horizontal edge)
+        "mb": 205,  # Middle-bottom (horizontal edge)
+        "lm": 201,  # Left-middle (vertical edge)
+        "rm": 207,  # Right-middle (vertical edge)
+        "mm": 204,  # Middle-middle (center)
+    }
+    
+    # world.populate({1: 0.8, 12: 0.2}) #2: 0.05, 4: 0.05, 8: 0.05, 9: 0.05})  # Randomized population
     world.set_view(1648, 3396)  # Initial view position
+    
+    # Populate the world with a single ground tile first
+    world.fill(tile_id=1)  # Assuming 1 is the ground tile
+
+    # Add a body of water (3x3 grid) in the middle of the world
+    # world.place_rectangle(tile_id=6, top_left=(10, 10), bottom_right=(12, 12))
+    
+    # Loop to create the rectangles
+    # water_tile_id = 6
+    for _ in range(20):
+        # Random size for the rectangle (3x3 to 8x8)
+        width = random.randint(3, 8)
+        height = random.randint(3, 8)
+
+        # Random top-left position within world bounds
+        max_row = world.height_in_tiles - height
+        max_col = world.width_in_tiles - width
+        top_left_row = random.randint(0, max_row)
+        top_left_col = random.randint(0, max_col)
+
+        # Calculate bottom-right corner
+        bottom_right_row = top_left_row + height - 1
+        bottom_right_col = top_left_col + width - 1
+
+        # Place the rectangle
+        # Place a lake in the world
+        world.place_lake(top_left=(top_left_row, top_left_col), bottom_right=(bottom_right_row, bottom_right_col), tile_ids=lake_tile_ids)
+    
+
+    # Add a horizontal river
+    # world.place_rectangle(tile_id=12, top_left=(15, 0), bottom_right=(15, 127))
+
+    # Add a vertical river
+    # world.place_rectangle(tile_id=11, top_left=(0, 20), bottom_right=(127, 20))
+
+    # Render the world
+    world.render(screen, sprite_manager, tile_to_sprite)
+
+    
 
     # Render world
-    world.render(screen, sprite_manager, tile_to_sprite)
-    move_speed = 200  # Speed of movement in pixels per second
+    # world.render(screen, sprite_manager, tile_to_sprite)
+    move_speed = 400  # Speed of movement in pixels per second
     
     running = True
     while running:
+    
+        ## Inital code each loop
         mouse_pos = pygame.mouse.get_pos()
         delta_time = clock.tick(60) / 1000.0  # Time in seconds
-       
+        
+        ## Update window caption with mouse positions
+        caption = config.game_title + "  v" + str(config.game_version) 
+        caption += " [" + str(int(world.world_x)) + "," + str(int(world.world_y)) + "]"
+        caption += " (" + str(mouse_pos[0]) + "," + str(mouse_pos[1]) + ")"
+        pygame.display.set_caption(caption)
+        
+        ## Lets respond to events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             # Process input and handle state transitions
             state_manager.handle_event(event, mouse_pos)
-
-            # Handle key press events
-            # if event.type == pygame.KEYDOWN:
-            # keys = pygame.key.get_pressed()  # Capture the state of all keys
 
             if state_manager.get_state() == "play":
                 # Fetch the state of all keys
