@@ -170,22 +170,25 @@ class World:
         self.show_minimap = not self.show_minimap
         # print(f"Mini-map visibility: {self.show_minimap}")
             
-    def render(self, screen, sprite_manager, tile_to_sprite):
+    def render(self, screen, sprite_manager, tile_to_sprite, scale=1.0):
         """
         Render the visible portion of the world.
         :param screen: Pygame screen to render on.
         :param sprite_manager: SpriteManager to fetch and render sprites.
         :param tile_to_sprite: Mapping of tile IDs to sprite names.
+        :param scale: Scale factor for rendering.
         """
+        scaled_tile_size = int(self.tile_size * scale)
+
         # Calculate the range of tiles visible in the window
         start_col = int(self.world_x) // self.tile_size
         start_row = int(self.world_y) // self.tile_size
-        end_col = (int(self.world_x) + 800) // self.tile_size + 1
-        end_row = (int(self.world_y) + 600) // self.tile_size + 1
+        end_col = (int(self.world_x) + screen.get_width()) // self.tile_size + 1
+        end_row = (int(self.world_y) + screen.get_height()) // self.tile_size + 1
 
         # Offset to adjust tile positions on the screen
-        x_offset = -(int(self.world_x) % self.tile_size)
-        y_offset = -(int(self.world_y) % self.tile_size)
+        x_offset = -(int(self.world_x) % self.tile_size) * scale
+        y_offset = -(int(self.world_y) % self.tile_size) * scale
 
         # Render each visible tile
         for row in range(start_row, min(end_row, self.height_in_tiles)):
@@ -195,9 +198,41 @@ class World:
                 if sprite_name:
                     sprite = sprite_manager.get_sprite(sprite_name)
                     if sprite:
-                        screen.blit(sprite.get_image(), 
-                                    (x_offset + (col - start_col) * self.tile_size,
-                                     y_offset + (row - start_row) * self.tile_size))
+                        scaled_sprite = pygame.transform.scale(sprite.get_image(), 
+                                                               (scaled_tile_size, scaled_tile_size))
+                        screen.blit(scaled_sprite, 
+                                    (x_offset + (col - start_col) * scaled_tile_size,
+                                     y_offset + (row - start_row) * scaled_tile_size))
+
+            
+    # def render(self, screen, sprite_manager, tile_to_sprite):
+        # """
+        # Render the visible portion of the world.
+        # :param screen: Pygame screen to render on.
+        # :param sprite_manager: SpriteManager to fetch and render sprites.
+        # :param tile_to_sprite: Mapping of tile IDs to sprite names.
+        # """
+        # Calculate the range of tiles visible in the window
+        # start_col = int(self.world_x) // self.tile_size
+        # start_row = int(self.world_y) // self.tile_size
+        # end_col = (int(self.world_x) + self.viewport_width) // self.tile_size + 1
+        # end_row = (int(self.world_y) + self.viewport_height) // self.tile_size + 1
+
+        # Offset to adjust tile positions on the screen
+        # x_offset = -(int(self.world_x) % self.tile_size)
+        # y_offset = -(int(self.world_y) % self.tile_size)
+
+        # Render each visible tile
+        # for row in range(start_row, min(end_row, self.height_in_tiles)):
+            # for col in range(start_col, min(end_col, self.width_in_tiles)):
+                # tile_id = self.tiles[row, col]
+                # sprite_name = tile_to_sprite.get(tile_id)
+                # if sprite_name:
+                    # sprite = sprite_manager.get_sprite(sprite_name)
+                    # if sprite:
+                        # screen.blit(sprite.get_image(), 
+                                    # (x_offset + (col - start_col) * self.tile_size,
+                                     # y_offset + (row - start_row) * self.tile_size))
 
     def move_view(self, dx, dy):
         """
